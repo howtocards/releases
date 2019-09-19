@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: howtocards-front-service
+  labels:
+    app: howtocards
+spec:
+  type: LoadBalancer
+  selector:
+    app: howtocards
+    service: frontend
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: howtocards-front
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: howtocards
+      service: frontend
+  template:
+    metadata:
+      labels:
+        app: howtocards
+        service: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: howtocards/frontend:v0.5.3
+          ports:
+            - containerPort: 80
