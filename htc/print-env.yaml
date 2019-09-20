@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: print-env
+spec:
+  containers:
+    - name: print-env
+      image: busybox:latest
+      command:
+        - sleep
+        - "3600"
+  restartPolicy: Always
