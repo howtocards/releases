@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: howtocards-database
+  labels:
+    app: howtocards
+spec:
+  ports:
+    - port: 5432
+      name: postgres
+  clusterIP: None
+  selector:
+    app: howtocards
+    service: database
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: howtocards-database
+spec:
+  serviceName: "howtocards-database"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: howtocards
+      service: howtocards-database
+  template:
+    metadata:
+      labels:
+        app: howtocards
+        service: howtocards-database
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:11.5
+          envFrom:
+            - configMapRef:
+                name: howtocards-postgres-config
+          ports:
+            - containerPort: 5432
+              name: postgredb
+          volumeMounts:
+            - name: postgredb
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+  volumeClaimTemplates:
+    - metadata:
+        name: postgredb
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: gp2
+        resources:
+          requests:
+            storage: 3Gi
