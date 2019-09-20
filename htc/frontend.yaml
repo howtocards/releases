@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: howtocards-front-service
+  name: howtocards-frontend
   labels:
     app: howtocards
 spec:
@@ -18,7 +18,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: howtocards-front
+  name: howtocards-frontend
 spec:
   replicas: 1
   selector:
