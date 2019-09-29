@@ -1,5 +1,5 @@
-ARG FRONTEND_VERSION=v0.6.0
-ARG SSI_VERSION=v0.1.2-pre.1
+ARG FRONTEND_VERSION=nightly
+ARG SSI_VERSION=nightly
 
 FROM howtocards/frontend:$FRONTEND_VERSION as static
 WORKDIR /build
@@ -13,5 +13,6 @@ ENV PUBLIC_URL https://howtocards.io
 ENV BACKEND_URL http://db:9000
 ENV LISTEN_HOST 0.0.0.0:4000
 ENV SITENAME Howtocards
+ENV INDEX_HTML_PATH /app/static/index.html
 
 CMD ["/howtocards_ssi"]

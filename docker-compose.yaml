@@ -40,6 +40,9 @@ services:
     build:
       context: ./facade
       dockerfile: Dockerfile
+      args:
+        FRONTEND_VERSION: v0.6.0
+        SSI_VERSION: v0.1.2-pre.1
     restart: always
     ports:
       - 4000:4000
