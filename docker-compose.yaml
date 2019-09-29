@@ -16,9 +16,6 @@ services:
 
   backend:
     container_name: howtocards-backend
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
     image: howtocards/backend:v0.3.1
     restart: always
     expose:
