@@ -1,0 +1,54 @@
+version: "3.7"
+
+services:
+  db:
+    container_name: howtocards-database
+    image: postgres:11.5
+    restart: always
+    volumes:
+      - /usr/local/var/howtocards/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - 5432:5432
+
+  backend:
+    container_name: howtocards-backend
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: howtocards/backend:v0.3.1
+    restart: always
+    ports:
+      - 9000:9000
+    links:
+      - db
+    depends_on:
+      - db
+    environment:
+      - RUST_LOG=info
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - DATABASE_HOST=db
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+
+  facade:
+    container_name: howtocards-facade
+    build:
+      context: ./facade
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 4000:4000
+    links:
+      - backend
+    depends_on:
+      - backend
+    environment:
+      - RUST_LOG=debug
+      - PUBLIC_URL=https://howtocards.io
+      - BACKEND_URL=http://backend:9000
+      - LISTEN_HOST=0.0.0.0:4000
