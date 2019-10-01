@@ -79,3 +79,4 @@ services:
       - backend
     volumes:
       - /usr/local/var/howtocards/tls:/var/lib/howtocards/tls
+      - /usr/local/var/howtocards/tls/dhparam.pem:/etc/ssl/certs/dhparam.pem
