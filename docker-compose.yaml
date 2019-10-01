@@ -78,4 +78,4 @@ services:
       - frontend
       - backend
     volumes:
-      - - /usr/local/var/howtocards/tls:/var/lib/howtocards/tls
+      - /usr/local/var/howtocards/tls:/var/lib/howtocards/tls
