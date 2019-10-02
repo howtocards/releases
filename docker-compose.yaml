@@ -46,7 +46,7 @@ services:
       dockerfile: Dockerfile
       args:
         FRONTEND_VERSION: v0.7.1
-        SSI_VERSION: v0.2.0
+        SSI_VERSION: v0.2.1
     restart: always
     expose:
       - "4000"
