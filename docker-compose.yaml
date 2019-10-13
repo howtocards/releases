@@ -16,7 +16,7 @@ services:
 
   backend:
     container_name: howtocards-backend
-    image: howtocards/backend:v0.4.0
+    image: howtocards/backend:v0.4.1
     restart: always
     expose:
       - "9000"
@@ -34,7 +34,7 @@ services:
 
   frontend:
     container_name: howtocards-frontend
-    image: howtocards/frontend:v0.7.1
+    image: howtocards/frontend:v0.7.2
     expose:
       - "80"
 
@@ -45,7 +45,7 @@ services:
       context: ./ssi
       dockerfile: Dockerfile
       args:
-        FRONTEND_VERSION: v0.7.1
+        FRONTEND_VERSION: v0.7.2
         SSI_VERSION: v0.3.0
     restart: always
     expose:
