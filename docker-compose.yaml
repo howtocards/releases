@@ -34,7 +34,7 @@ services:
 
   frontend:
     container_name: howtocards-frontend
-    image: howtocards/frontend:v0.7.4
+    image: howtocards/frontend:v0.7.3
     expose:
       - "80"
 
@@ -45,7 +45,7 @@ services:
       context: ./ssi
       dockerfile: Dockerfile
       args:
-        FRONTEND_VERSION: v0.7.4
+        FRONTEND_VERSION: v0.7.3
         SSI_VERSION: v0.3.0
     restart: always
     expose:
