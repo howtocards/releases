@@ -14,9 +14,9 @@ services:
     expose:
       - "5432"
 
-  backend:
-    container_name: howtocards-backend
-    image: howtocards/backend:v0.4.1
+  public-api:
+    container_name: howtocards-public-api
+    image: howtocards/public-api:latest
     restart: always
     expose:
       - "9000"
@@ -34,7 +34,7 @@ services:
 
   frontend:
     container_name: howtocards-frontend
-    image: howtocards/frontend:v0.7.5
+    image: howtocards/frontend:latest
     expose:
       - "80"
 
@@ -45,19 +45,19 @@ services:
       context: ./ssi
       dockerfile: Dockerfile
       args:
-        FRONTEND_VERSION: v0.7.5
-        SSI_VERSION: v0.3.0
+        FRONTEND_VERSION: latest
+        SSI_VERSION: latest
     restart: always
     expose:
       - "4000"
     links:
-      - backend
+      - public-api
     depends_on:
-      - backend
+      - public-api
     environment:
       - RUST_LOG=info
       - PUBLIC_URL=https://howtocards.io
-      - BACKEND_URL=http://backend:9000
+      - BACKEND_URL=http://public-api:9000
       - LISTEN_HOST=0.0.0.0:4000
 
   entry:
@@ -73,11 +73,11 @@ services:
     links:
       - ssi
       - frontend
-      - backend
+      - public-api
     depends_on:
       - ssi
       - frontend
-      - backend
+      - public-api
     volumes:
       - /usr/local/var/howtocards/tls:/var/lib/howtocards/tls
       - /usr/local/var/howtocards/tls/dhparam.pem:/etc/ssl/certs/dhparam.pem
