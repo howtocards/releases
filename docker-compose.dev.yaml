@@ -2,15 +2,15 @@ version: "3.7"
 
 services:
   public-api:
-    image: howtocards/public-api:nightly
+    image: howtocards/public-api:dev
 
   frontend:
-    image: howtocards/frontend:nightly
+    image: howtocards/frontend:dev
 
   ssi:
     build:
       args:
-        FRONTEND_VERSION: nightly
-        SSI_VERSION: nightly
+        FRONTEND_VERSION: dev
+        SSI_VERSION: dev
     environment:
       - PUBLIC_URL=http://test.cards.atomix.team/
