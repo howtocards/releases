@@ -14,3 +14,4 @@ services:
         SSI_VERSION: v0.3.0
     environment:
       - PUBLIC_URL=https://howtocards.io
+
