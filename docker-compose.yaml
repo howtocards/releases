@@ -81,3 +81,28 @@ services:
     volumes:
       - /usr/local/var/howtocards/tls:/var/lib/howtocards/tls
       - /usr/local/var/howtocards/tls/dhparam.pem:/etc/ssl/certs/dhparam.pem
+
+  queue:
+    container_name: howtocards-preview-queue
+    image: howtocards/preview-queue/preview-queue
+    restart: always
+    entrypoint: /app/queue
+    command:
+      - "--rabbit.host=queue-rabbit"
+    ports:
+      - "8080:8080"
+    links:
+      - queue-rabbit
+    depends_on:
+      - queue-rabbit
+
+  queue-rabbit:
+    container_name: howtocards-queue-rabbit
+    image: rabbitmq:3.7-management
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
