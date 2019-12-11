@@ -9,8 +9,7 @@ volumes:
       o: bind
 
 networks:
-  internal:
-    driver: host
+  entry:
 
 services:
   db:
@@ -19,6 +18,8 @@ services:
     restart: always
     volumes:
       - /usr/local/var/howtocards/postgres:/var/lib/postgresql/data
+    networks:
+      - entry
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -32,10 +33,10 @@ services:
     restart: always
     expose:
       - "9000"
-    links:
-      - db
     depends_on:
       - db
+    networks:
+      - entry
     environment:
       - RUST_LOG=info
       - POSTGRES_USER=${POSTGRES_USER}
@@ -47,6 +48,8 @@ services:
   frontend:
     container_name: howtocards-frontend
     image: howtocards/frontend:latest
+    networks:
+      - entry
     expose:
       - "80"
 
@@ -62,10 +65,10 @@ services:
     restart: always
     expose:
       - "4000"
-    links:
-      - public-api
     depends_on:
       - public-api
+    networks:
+      - entry
     environment:
       - RUST_LOG=info
       - PUBLIC_URL=https://howtocards.io
@@ -79,13 +82,15 @@ services:
       context: ./entry
       dockerfile: Dockerfile
     restart: always
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "https://howtocards.io"]
     ports:
       - "80:80"
       - "443:443"
-    links:
-      - ssi
-      - frontend
-      - public-api
+    networks:
+      entry:
+        aliases:
+          - howtocards.io
     depends_on:
       - ssi
       - frontend
@@ -103,10 +108,10 @@ services:
     entrypoint: /app/queue
     command:
       - "--rabbit.host=queue-rabbit"
+      - "--rabbit.pass=guest"
+      - "--rabbit.user=guest"
     ports:
       - "8080:8080"
-    links:
-      - queue-rabbit
     depends_on:
       - queue-rabbit
 
@@ -115,9 +120,8 @@ services:
     image: rabbitmq:3.7-management
     restart: always
     environment:
-      RABBITMQ_DEFAULT_USER: rabbitmq
-      RABBITMQ_DEFAULT_PASS: rabbitmq
-      RABBITMQ_NODENAME: preview@howtocards
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     ports:
       - "15672:15672"
       - "5672:5672"
@@ -140,14 +144,13 @@ services:
     container_name: howtocards-preview-worker-1
     image: howtocards/preview-worker/preview-worker
     restart: always
-    links:
-      - queue-rabbit
-      - image-uploader
     depends_on:
       - queue-rabbit
       - image-uploader
+      - entry
     environment:
       RABBIT_HOST: "amqp://queue-rabbit:5672"
       QUEUE_NAME: event
       UPLOADER_HOST: "http://image-uploader:4000"
       POOL_SIZE: "2"
+      RENDER_HOST: "https://howtocards.io"
