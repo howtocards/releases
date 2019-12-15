@@ -2,10 +2,13 @@ version: "3.7"
 
 services:
   public-api:
-    image: howtocards/public-api:dev
+    image: howtocards/backend/public-api:dev
+
+  internal-api:
+    image: howtocards/backend/public-api:dev
 
   frontend:
-    image: howtocards/frontend:dev
+    image: howtocards/frontend/frontend:dev
 
   ssi:
     build:
@@ -14,9 +17,26 @@ services:
         SSI_VERSION: dev
     environment:
       - PUBLIC_URL=http://test.cards.atomix.team/
+      - IMAGE_URL=http://test.cards.atomix.team/images
 
   entry:
+    networks:
+      entry:
+        aliases:
+          - test.cards.atomix.team
     volumes:
       - /etc/letsencrypt/live/test.cards.atomix.team/fullchain.pem:/var/lib/howtocards/tls/howtocards.crt
       - /etc/letsencrypt/live/test.cards.atomix.team/privkey.pem:/var/lib/howtocards/tls/howtocards.pem
       - /usr/local/var/howtocards/tls/dhparam.pem:/etc/ssl/certs/dhparam.pem
+
+  queue:
+    image: howtocards/preview-queue/preview-queue:dev
+
+  image-uploader:
+    image: howtocards/image-uploader/image-uploader:dev
+
+  preview-worker-1:
+    image: howtocards/preview-worker/preview-worker:dev
+    environment:
+      POOL_SIZE: "2"
+      RENDER_HOST: "http://test.cards.atomix.team"

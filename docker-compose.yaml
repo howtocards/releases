@@ -21,11 +21,13 @@ services:
     networks:
       - entry
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     expose:
       - "5432"
+    ports:
+      - 5432:5432
 
   public-api:
     container_name: howtocards-public-api
@@ -38,12 +40,13 @@ services:
     networks:
       - entry
     environment:
-      - RUST_LOG=info
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - DATABASE_HOST=db
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+      RUST_LOG: info
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PREVIEW_QUEUE_URL: http://queue:8080
+      POSTGRES_DB: ${POSTGRES_DB}
+      DATABASE_HOST: db
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
 
   internal-api:
     container_name: howtocards-internal-api
@@ -51,21 +54,24 @@ services:
     restart: always
     expose:
       - "9002"
+    ports:
+      - 9002:9002
     depends_on:
       - db
     networks:
       - entry
     environment:
-      - RUST_LOG=info
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - DATABASE_HOST=db
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+      RUST_LOG: info
+      LISTEN: 0.0.0.0:9002
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DATABASE_HOST: db
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
 
   frontend:
     container_name: howtocards-frontend
-    image: howtocards/frontend:latest
+    image: howtocards/frontend/frontend:latest
     networks:
       - entry
     expose:
@@ -88,10 +94,11 @@ services:
     networks:
       - entry
     environment:
-      - RUST_LOG=info
-      - PUBLIC_URL=https://howtocards.io
-      - BACKEND_URL=http://public-api:9000
-      - LISTEN_HOST=0.0.0.0:4000
+      RUST_LOG: info
+      PUBLIC_URL: https://howtocards.io
+      IMAGE_URL: https://howtocards.io/images
+      BACKEND_URL: http://public-api:9000
+      LISTEN_HOST: 0.0.0.0:4000
 
   entry:
     container_name: howtocards-entry
@@ -182,4 +189,4 @@ services:
       QUEUE_NAME: event
       RABBIT_HOST: "amqp://queue-rabbit:5672"
       RENDER_HOST: "https://howtocards.io"
-      UPLOADER_HOST: "http://image-uploader:4000"
+      UPLOADER_HOST: "http://image-uploader:5005"
