@@ -1,5 +1,10 @@
 version: "3.7"
 
+volumes:
+  image-storage:
+    driver_opts:
+      device: "/usr/local/var/howtocards/preview-images"
+
 services:
   public-api:
     image: docker.pkg.github.com/howtocards/backend/public-api:dev
