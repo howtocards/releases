@@ -65,6 +65,7 @@ services:
       LISTEN: 0.0.0.0:9002
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PREVIEW_QUEUE_URL: http://preview-queue:8080
       POSTGRES_DB: ${POSTGRES_DB}
       DATABASE_HOST: database
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database/${POSTGRES_DB}
