@@ -1,10 +1,10 @@
 ARG FRONTEND_VERSION=nightly
 ARG SSI_VERSION=nightly
 
-FROM howtocards/frontend/frontend:$FRONTEND_VERSION as static
+FROM docker.pkg.github.com/howtocards/frontend/frontend:$FRONTEND_VERSION as static
 WORKDIR /build
 
-FROM howtocards/ssi/ssi:$SSI_VERSION
+FROM docker.pkg.github.com/howtocards/ssi/ssi:$SSI_VERSION
 WORKDIR /app
 
 COPY --from=static /var/www /app/static
