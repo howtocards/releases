@@ -2,8 +2,11 @@ version: "3.7"
 
 volumes:
   image-storage:
+    driver: local
     driver_opts:
+      type: none
       device: "/usr/local/var/howtocards/preview-images"
+      o: bind
 
 services:
   public-api:
