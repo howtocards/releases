@@ -12,7 +12,7 @@ networks:
   entry:
 
 services:
-  db:
+  database:
     container_name: howtocards-database
     image: postgres:11.5
     restart: always
@@ -36,7 +36,7 @@ services:
     expose:
       - "9000"
     depends_on:
-      - db
+      - database
     networks:
       - entry
     environment:
@@ -45,8 +45,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PREVIEW_QUEUE_URL: http://queue:8080
       POSTGRES_DB: ${POSTGRES_DB}
-      DATABASE_HOST: db
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+      DATABASE_HOST: database
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database/${POSTGRES_DB}
 
   internal-api:
     container_name: howtocards-internal-api
@@ -57,7 +57,7 @@ services:
     ports:
       - 9002:9002
     depends_on:
-      - db
+      - database
     networks:
       - entry
     environment:
@@ -66,8 +66,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      DATABASE_HOST: db
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+      DATABASE_HOST: database
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database/${POSTGRES_DB}
 
   frontend:
     container_name: howtocards-frontend
