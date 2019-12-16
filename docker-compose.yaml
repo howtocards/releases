@@ -1,42 +1,90 @@
 version: "3.7"
 
+volumes:
+  image-storage:
+    driver: local
+    driver_opts:
+      type: none
+      device: "${PWD}/preview-images"
+      o: bind
+
+networks:
+  entry:
+
 services:
-  db:
+  database:
     container_name: howtocards-database
     image: postgres:11.5
     restart: always
     volumes:
       - /usr/local/var/howtocards/postgres:/var/lib/postgresql/data
+    networks:
+      - entry
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     expose:
       - "5432"
+    ports:
+      - 5432:5432
 
   public-api:
     container_name: howtocards-public-api
-    image: howtocards/public-api:latest
+    image: docker.pkg.github.com/howtocards/backend/public-api:latest
     restart: always
     expose:
       - "9000"
-    links:
-      - db
     depends_on:
-      - db
+      - database
+    networks:
+      - entry
     environment:
-      - RUST_LOG=info
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - DATABASE_HOST=db
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+      RUST_LOG: info
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PREVIEW_QUEUE_URL: http://preview-queue:8080
+      POSTGRES_DB: ${POSTGRES_DB}
+      DATABASE_HOST: database
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database/${POSTGRES_DB}
+
+  internal-api:
+    container_name: howtocards-internal-api
+    image: docker.pkg.github.com/howtocards/backend/internal-api:latest
+    restart: always
+    expose:
+      - "9002"
+    ports:
+      - 9002:9002
+    depends_on:
+      - database
+    networks:
+      - entry
+    environment:
+      RUST_LOG: info
+      LISTEN: 0.0.0.0:9002
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      DATABASE_HOST: database
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database/${POSTGRES_DB}
 
   frontend:
     container_name: howtocards-frontend
-    image: howtocards/frontend:latest
+    image: docker.pkg.github.com/howtocards/frontend/frontend:latest
+    networks:
+      - entry
     expose:
       - "80"
+
+  # admin:
+  #   container_name: howtocards-admin
+  #   image: docker.pkg.github.com/howtocards/admin/admin:latest
+  #   networks:
+  #     - entry
+  #   expose: # ???
+  #     - "80"
+  #     - "443"
 
   ssi:
     container_name: howtocards-ssi
@@ -50,15 +98,16 @@ services:
     restart: always
     expose:
       - "4000"
-    links:
-      - public-api
     depends_on:
       - public-api
+    networks:
+      - entry
     environment:
-      - RUST_LOG=info
-      - PUBLIC_URL=https://howtocards.io
-      - BACKEND_URL=http://public-api:9000
-      - LISTEN_HOST=0.0.0.0:4000
+      RUST_LOG: info
+      PUBLIC_URL: https://howtocards.io
+      IMAGE_URL: https://howtocards.io/images
+      BACKEND_URL: http://public-api:9000
+      LISTEN_HOST: 0.0.0.0:4000
 
   entry:
     container_name: howtocards-entry
@@ -67,17 +116,86 @@ services:
       context: ./entry
       dockerfile: Dockerfile
     restart: always
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "https://howtocards.io"]
     ports:
       - "80:80"
       - "443:443"
-    links:
-      - ssi
-      - frontend
-      - public-api
+    networks:
+      entry:
+        aliases:
+          - howtocards.io
     depends_on:
       - ssi
       - frontend
       - public-api
     volumes:
-      - /usr/local/var/howtocards/tls:/var/lib/howtocards/tls
+      - /usr/local/var/howtocards/tls/howtocards.crt:/var/lib/howtocards/tls/howtocards.crt
+      - /usr/local/var/howtocards/tls/howtocards.pem:/var/lib/howtocards/tls/howtocards.pem
       - /usr/local/var/howtocards/tls/dhparam.pem:/etc/ssl/certs/dhparam.pem
+      - image-storage:/images
+
+  preview-queue:
+    container_name: howtocards-preview-queue
+    image: docker.pkg.github.com/howtocards/preview-queue/preview-queue:latest
+    restart: always
+    entrypoint: /app/queue
+    command:
+      - "--rabbit.host=queue-rabbit"
+      - "--rabbit.pass=guest"
+      - "--rabbit.user=guest"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - queue-rabbit
+    networks:
+      - entry
+
+  queue-rabbit:
+    container_name: howtocards-queue-rabbit
+    image: rabbitmq:3.7-management
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    volumes:
+      - /usr/local/var/howtocards/rabbit/queue:/var/lib/rabbitmq
+    networks:
+      - entry
+
+  image-uploader:
+    container_name: howtocards-image-uploader
+    image: docker.pkg.github.com/howtocards/image-uploader/image-uploader:latest
+    restart: always
+    environment:
+      VOLUME: /files
+      LISTEN_PORT: "5005"
+    ports:
+      - "5005:5005"
+    volumes:
+      - image-storage:/files
+    networks:
+      - entry
+
+  preview-worker-1:
+    container_name: howtocards-preview-worker-1
+    image: docker.pkg.github.com/howtocards/preview-worker/preview-worker:latest
+    restart: always
+    depends_on:
+      - queue-rabbit
+      - image-uploader
+      - entry
+      - internal-api
+    networks:
+      - entry
+    environment:
+      CALLBACK_HOST: "http://internal-api:9002"
+      DEBUG: "worker"
+      POOL_SIZE: "2"
+      QUEUE_NAME: event
+      RABBIT_HOST: "amqp://queue-rabbit:5672"
+      RENDER_HOST: "https://howtocards.io"
+      UPLOADER_HOST: "http://image-uploader:5005"

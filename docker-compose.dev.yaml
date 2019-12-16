@@ -2,10 +2,16 @@ version: "3.7"
 
 services:
   public-api:
-    image: howtocards/public-api:dev
+    image: docker.pkg.github.com/howtocards/backend/public-api:dev
+
+  internal-api:
+    image: docker.pkg.github.com/howtocards/backend/public-api:dev
 
   frontend:
-    image: howtocards/frontend:dev
+    image: docker.pkg.github.com/howtocards/frontend/frontend:dev
+
+  # admin:
+  #   image: docker.pkg.github.com/howtocards/admin/admin:dev
 
   ssi:
     build:
@@ -13,10 +19,27 @@ services:
         FRONTEND_VERSION: dev
         SSI_VERSION: dev
     environment:
-      - PUBLIC_URL=http://test.cards.atomix.team/
+      - PUBLIC_URL=https://test.cards.atomix.team/
+      - IMAGE_URL=https://test.cards.atomix.team/images
 
   entry:
+    networks:
+      entry:
+        aliases:
+          - test.cards.atomix.team
     volumes:
       - /etc/letsencrypt/live/test.cards.atomix.team/fullchain.pem:/var/lib/howtocards/tls/howtocards.crt
       - /etc/letsencrypt/live/test.cards.atomix.team/privkey.pem:/var/lib/howtocards/tls/howtocards.pem
       - /usr/local/var/howtocards/tls/dhparam.pem:/etc/ssl/certs/dhparam.pem
+
+  preview-queue:
+    image: docker.pkg.github.com/howtocards/preview-queue/preview-queue:dev
+
+  image-uploader:
+    image: docker.pkg.github.com/howtocards/image-uploader/image-uploader:dev
+
+  preview-worker-1:
+    image: docker.pkg.github.com/howtocards/preview-worker/preview-worker:dev
+    environment:
+      POOL_SIZE: "2"
+      RENDER_HOST: "https://test.cards.atomix.team"
