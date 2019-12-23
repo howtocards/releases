@@ -2,15 +2,34 @@ version: "3.7"
 
 services:
   public-api:
-    image: howtocards/public-api:v0.4.2
+    image: docker.pkg.github.com/howtocards/public-api:v0.5.0-alpha
+
+  internal-api:
+    image: docker.pkg.github.com/howtocards/internal-api:v0.5.0-alpha
 
   frontend:
-    image: howtocards/frontend:v0.7.5
+    image: docker.pkg.github.com/howtocards/frontend/frontend:v0.7.7
+
+  # admin:
+  #   image: docker.pkg.github.com/howtocards/admin/admin:v0.1.2
 
   ssi:
     build:
       args:
-        FRONTEND_VERSION: v0.7.5
-        SSI_VERSION: v0.3.0
+        FRONTEND_VERSION: v0.7.7
+        SSI_VERSION: v0.3.1
     environment:
       - PUBLIC_URL=https://howtocards.io
+      - IMAGE_URL=https://howtocards.io/images
+
+  preview-queue:
+    image: docker.pkg.github.com/howtocards/preview-queue/preview-queue:201912112227046aec19
+
+  image-uploader:
+    image: docker.pkg.github.com/howtocards/image-uploader/image-uploader:v0.2.9
+
+  preview-worker-1:
+    image: docker.pkg.github.com/howtocards/preview-worker/preview-worker:v0.2.0
+    environment:
+      POOL_SIZE: "2"
+      RENDER_HOST: "https://howtocards.io"
