@@ -16,7 +16,7 @@ services:
   ssi:
     build:
       args:
-        FRONTEND_VERSION: v0.7.7
+        FRONTEND_VERSION: v0.7.8
         SSI_VERSION: v0.3.1
     environment:
       - PUBLIC_URL=https://howtocards.io
