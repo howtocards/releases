@@ -8,6 +8,7 @@ volumes:
       device: "/usr/local/var/howtocards/preview-images"
       o: bind
 
+
 services:
   public-api:
     image: docker.pkg.github.com/howtocards/backend/public-api:dev
