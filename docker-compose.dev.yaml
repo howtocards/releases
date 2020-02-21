@@ -1,5 +1,10 @@
 version: "3.7"
 
+# mkdir -p /usr/local/var/howtocards/preview-images
+## issue certificate with let's encrypt
+# mkdir -p /usr/local/var/howtocards/tls
+# openssl dhparam -out /usr/local/var/howtocards/tls/dhparam.pem 2048
+
 volumes:
   image-storage:
     driver: local
@@ -27,8 +32,8 @@ services:
         FRONTEND_VERSION: dev
         SSI_VERSION: dev
     environment:
-      - PUBLIC_URL=https://test.cards.atomix.team/
-      - IMAGE_URL=https://test.cards.atomix.team/images
+      - PUBLIC_URL=https://cards-dev.atomix.team/
+      - IMAGE_URL=https://cards-dev.atomix.team/images
 
   entry:
     networks:
@@ -36,8 +41,8 @@ services:
         aliases:
           - test.cards.atomix.team
     volumes:
-      - /etc/letsencrypt/live/test.cards.atomix.team/fullchain.pem:/var/lib/howtocards/tls/howtocards.crt
-      - /etc/letsencrypt/live/test.cards.atomix.team/privkey.pem:/var/lib/howtocards/tls/howtocards.pem
+      - /etc/letsencrypt/live/cards-dev.atomix.team/fullchain.pem:/var/lib/howtocards/tls/howtocards.crt
+      - /etc/letsencrypt/live/cards-dev.atomix.team/privkey.pem:/var/lib/howtocards/tls/howtocards.pem
       - /usr/local/var/howtocards/tls/dhparam.pem:/etc/ssl/certs/dhparam.pem
 
   preview-queue:
@@ -50,4 +55,4 @@ services:
     image: docker.pkg.github.com/howtocards/preview-worker/preview-worker:dev
     environment:
       POOL_SIZE: "2"
-      RENDER_HOST: "https://test.cards.atomix.team"
+      RENDER_HOST: "https://cards-dev.atomix.team"
