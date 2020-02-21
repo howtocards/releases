@@ -1,17 +1,40 @@
 name: PRODUCTION CI
 
-on: [push]
-
+on:
+  push:
+    paths:
+      - "docker-compose.prod.yaml"
+  
 jobs:
-  build:
+  deploy:
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
-    - name: Run a one-line script
-      run: echo Hello, world!
-    - name: Run a multi-line script
-      run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+    - name: SSH
+      uses: appleboy/ssh-action@v0.0.7
+      env:
+        POSTGRES_DB: ${{ secrets.PROD_DB }}
+        POSTGRES_USER: ${{ secrets.PROD_DB_USER }}
+        POSTGRES_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+        RELEASE_SHA: ${{ github.sha }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        DOCKER_USERNAME: ${{ secrets.PROD_DOCKER_USERNAME }}
+      with:
+        host: ${{ secrets.PROD_HOSTNAME }}
+        username: ${{ secrets.PROD_USER }}
+        port: ${{ secrets.PROD_PORT }}
+        key: ${{ secrets.PROD_SSH_PRIVATE }}
+        passphrase: ${{ secrets.PROD_SSH_PASSPHRASE }}
+        envs: POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,RELEASE_SHA,GITHUB_TOKEN,DOCKER_USERNAME
+        script_stop: true
+        script: |
+          cd releases
+          git reset --hard HEAD
+          git clean -f
+          git fetch -p
+          git checkout $RELEASE_SHA
+          docker login docker.pkg.github.com --username $DOCKER_USERNAME -p $GITHUB_TOKEN
+          docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml build
+          docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up -d --remove-orphans
