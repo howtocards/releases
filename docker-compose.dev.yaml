@@ -40,7 +40,7 @@ services:
     networks:
       entry:
         aliases:
-          - test.cards.atomix.team
+          - cards-dev.atomix.team
     volumes:
       - /etc/letsencrypt/live/cards-dev.atomix.team/fullchain.pem:/var/lib/howtocards/tls/howtocards.crt
       - /etc/letsencrypt/live/cards-dev.atomix.team/privkey.pem:/var/lib/howtocards/tls/howtocards.pem
