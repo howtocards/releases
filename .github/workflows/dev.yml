@@ -13,9 +13,28 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Run a one-line script
-      run: echo Hello, world!
-    - name: Run a multi-line script
-      run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+    - name: SSH
+      uses: appleboy/ssh-action@v0.0.7
+      env:
+        POSTGRES_DB: ${{ secrets.DEV_DB }}
+        POSTGRES_USER: ${{ secrets.DEV_DB_USER }}
+        POSTGRES_PASSWORD: ${{ secrets.DEV_DB_PASSWORD }}
+        RELEASE_SHA: ${{ github.sha }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        host: ${{ secrets.DEV_HOSTNAME }}
+        username: ${{ secrets.DEV_USER }}
+        port: ${{ secrets.DEV_PORT }}
+        key: ${{ secrets.DEV_SSH_PRIVATE }}
+        passphrase: ${{ secrets.DEV_SSH_PASSPHRASE }}
+        envs: POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,RELEASE_SHA,GITHUB_TOKEN
+        script_stop: true
+        script: |
+          cd releases
+          git reset --hard HEAD
+          git clean -f
+          git fetch -p
+          git checkout $RELEASE_SHA
+          docker login docker.pkg.github.com --username sergeysova -p $GITHUB_TOKEN
+          docker-compose -f docker-compose.yaml -f docker-compose.dev.yaml build
+          docker-compose -f docker-compose.yaml -f docker-compose.dev.yaml up -d --remove-orphans
