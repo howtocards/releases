@@ -29,7 +29,7 @@ jobs:
         port: ${{ secrets.DEV_PORT }}
         key: ${{ secrets.DEV_SSH_PRIVATE }}
         passphrase: ${{ secrets.DEV_SSH_PASSPHRASE }}
-        envs: POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,RELEASE_SHA,GITHUB_TOKEN
+        envs: POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,RELEASE_SHA,GITHUB_TOKEN,DOCKER_USERNAME
         script_stop: true
         script: |
           cd releases
@@ -37,6 +37,6 @@ jobs:
           git clean -f
           git fetch -p
           git checkout $RELEASE_SHA
-          docker login docker.pkg.github.com --username sergeysova -p $GITHUB_TOKEN
+          docker login docker.pkg.github.com --username $DOCKER_USERNAME -p $GITHUB_TOKEN
           docker-compose -f docker-compose.yaml -f docker-compose.dev.yaml build
           docker-compose -f docker-compose.yaml -f docker-compose.dev.yaml up -d --remove-orphans
