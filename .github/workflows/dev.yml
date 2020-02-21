@@ -39,7 +39,6 @@ jobs:
           git clean -f
           git fetch -p
           git checkout $RELEASE_SHA
-          echo "$POSTGRES_PASSWORD" > ~/database-password.txt
           docker login docker.pkg.github.com --username $DOCKER_USERNAME -p $GITHUB_TOKEN
           docker-compose -f docker-compose.yaml -f docker-compose.dev.yaml build
           docker-compose -f docker-compose.yaml -f docker-compose.dev.yaml up -d --remove-orphans
