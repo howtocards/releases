@@ -5,6 +5,7 @@ on:
     paths:
       - "docker-compose.yaml"
       - "docker-compose.dev.yaml"
+      - ".github/workflows/dev.yml"
   
 jobs:
   deploy:
