@@ -3,7 +3,7 @@ name: PRODUCTION CI
 on:
   push:
     paths:
-      - "docker-compose.prod.yaml"
+      - "prod.yaml"
   
 jobs:
   deploy:
@@ -35,5 +35,5 @@ jobs:
           git fetch -p
           git checkout $RELEASE_SHA
           docker login docker.pkg.github.com --username $DOCKER_USERNAME -p $GITHUB_TOKEN
-          docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml build
-          docker-compose -f docker-compose.yaml -f docker-compose.prod.yaml up -d --remove-orphans
+          docker-compose -f docker-compose.yaml -f prod.yaml build
+          docker-compose -f docker-compose.yaml -f prod.yaml up -d --remove-orphans
