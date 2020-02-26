@@ -43,5 +43,5 @@ jobs:
           export POSTGRES_DB="$DB_NAME"
           export POSTGRES_USER="$DB_USER"
           export POSTGRES_PASSWORD="$DB_PASS"
-          docker-compose -f docker-compose.yaml -f docker-compose.dev.yaml build
-          docker-compose -f docker-compose.yaml -f docker-compose.dev.yaml up -d --remove-orphans
+          docker-compose -f docker-compose.yaml -f dev.yaml build
+          docker-compose -f docker-compose.yaml -f dev.yaml up -d --remove-orphans
