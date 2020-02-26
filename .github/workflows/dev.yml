@@ -1,10 +1,11 @@
 name: Dev CI
 
 on:
+  repository_dispatch:
   push:
     paths:
       - "docker-compose.yaml"
-      - "docker-compose.dev.yaml"
+      - "dev.yaml"
       - ".github/workflows/dev.yml"
       - "entry/**"
       - "ssi/**"
