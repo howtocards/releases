@@ -16,6 +16,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - uses: chrnorm/deployment-action@releases/v1
+      name: Create GitHub Deployment
+      id: deployment
+      with:
+        token: '${{ github.token }}'
+        target_url: https://cards-dev.atomix.team
+        environment: development
     - name: SSH
       uses: appleboy/ssh-action@v0.0.7
       env:
@@ -45,3 +52,22 @@ jobs:
           export POSTGRES_PASSWORD="$DB_PASS"
           docker-compose -f docker-compose.yaml -f dev.yaml build
           docker-compose -f docker-compose.yaml -f dev.yaml up -d --remove-orphans
+    - uses: chrnorm/deployment-status@releases/v1
+      name: Deployment success
+      if: success()
+      with:
+        token: '${{ github.token }}'
+        target_url: https://cards-dev.atomix.team
+        state: success
+        environment: development
+        deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+
+    - uses: chrnorm/deployment-status@releases/v1
+      name: Deployment failure
+      if: failure()
+      with:
+        token: '${{ github.token }}'
+        target_url: https://cards-dev.atomix.team
+        state: failure
+        environment: development
+        deployment_id: ${{ steps.deployment.outputs.deployment_id }}
