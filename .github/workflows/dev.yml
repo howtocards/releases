@@ -9,6 +9,8 @@ on:
       - ".github/workflows/dev.yml"
       - "entry/**"
       - "ssi/**"
+  project_card:
+    types: [created]
   
 jobs:
   deploy:
